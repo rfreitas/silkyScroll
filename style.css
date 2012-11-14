@@ -1,0 +1,10 @@
+.wrapper{
+	height: 100%;
+	width: 100%;
+	overflow: hidden;
+}
+
+.list{
+	width: 100%;
+	white-space: pre-wrap;
+}
