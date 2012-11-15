@@ -2,9 +2,27 @@
 	height: 100%;
 	width: 100%;
 	overflow: hidden;
+	border-style: solid;
+
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }
 
 .list{
 	width: 100%;
+	
+}
+
+.list-separator{
+	border-style: solid;
+}
+
+.list > .content{
 	white-space: pre-wrap;
+	background-image: url("circle.gif");
+	height: 500000px;
 }
