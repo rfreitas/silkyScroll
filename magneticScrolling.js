@@ -192,7 +192,7 @@ var m = Math,
 			return { x: e.pageX, y: e.pageY };
 		};
 
-		function equal_points(point1, point2){
+		function equalPoints(point1, point2){
 			if ( point1.x === point2.x && point2.y === point2.y)
 				return true;
 			return false;
@@ -346,9 +346,25 @@ var m = Math,
 			console.log("ENDING");
 
 			var current_point = this.getPoint(e);
+			//the end point might be different than the previous end point,
+			//but might be the same as well
+
+			var time = 100;//ms
+
 			var elapsedTime = e.timeStamp - this.timeStamp;
-			var delta = this.delta( this.point , current_point);
-			//this.velocity = delta.y/elapsedTime;
+			
+			if (equalPoints( current_point, this.point )  && elapsedTime > time){
+				this.velocity = 0;
+				this.timeStamp = e.timeStamp;
+			}
+			else if (!equalPoints( current_point, this.point )){
+				var delta = this.delta( this.point , current_point);
+				this.velocity = delta/elapsedTime;
+				this.timeStamp = e.timeStamp;
+			}	
+			
+			
+
 
 			var nullVelocityMinimum = 0.5;
 
