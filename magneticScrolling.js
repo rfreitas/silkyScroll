@@ -350,7 +350,9 @@ var m = Math,
 			var delta = this.delta( this.point , current_point);
 			//this.velocity = delta.y/elapsedTime;
 
-			if (this.velocity !== 0){
+			var nullVelocityMinimum = 0.5;
+
+			if ( Math.abs(this.velocity) >  nullVelocityMinimum){
 				this.startDeacceleration(e);
 				return;
 			}
