@@ -269,6 +269,10 @@ var m = Math,
 			var current_velocity = delta.y/elapsedTime;
 
 			this.point = current_point;//input point
+
+			this.timeStamp = e.timeStamp;
+
+			this.velocity = current_velocity;
 			
 			if ( this.givingMomentum && sameSign(current_velocity, this.velocity) && Math.abs(current_velocity) > Math.abs(this.velocity) ){
 				this.startDeacceleration(e);
@@ -279,9 +283,7 @@ var m = Math,
 
 			console.log( elapsedTime );
 
-			this.timeStamp = e.timeStamp;
-
-			this.velocity = current_velocity;
+			
 			console.log("velocity:"+this.velocity);
 
 			
@@ -315,24 +317,33 @@ var m = Math,
 			}
 
 			console.log(this.deacceleration);
-			//var new_velocity = this.momentumAnimationVelocityStart + sign*this.deacceleration*elapsedTime;
 
 			//assumes that time between frames is constant
-			var new_velocity = this.velocity*0.89;//this creates a hidh order hiperbole, meaning in the rate/deacceleration decreases
-			//var finish_time = -this.momentumAnimationVelocityStart/(sign*this.deacceleration);
+			//this can be a problem for low end devices, but it is fastest way
+			//v(t) = v(t-1)*K'  , the K' is for a constant dt
+			//var new_velocity = this.velocity*0.9;//this creates a hidh order hiperbole, meaning in the rate/deacceleration decreases
+			
 
-			var new_position = {
-				x:0,
-				y: this.momentumAnimationPositionStart.y + this.momentumAnimationVelocityStart*elapsedTime +
-				 (sign/2)*this.deacceleration*elapsedTime*elapsedTime
-			};
+			//version that does not assume a constant frame rate
+			//non recursive formula: v(t) = Vo*K^(t/dt)
+			//recusive formula v(t) = Vt-1*K^(1/dt)
+				var friction = Math.pow(0.6,1/smoothness);
+				console.log("friction:"+friction);
 
-			/*
-			if (new_position.y < 0){
+				new_velocity = this.velocity*friction;
+
+				//non recursive version
+				//new_velocity = this.momentumAnimationVelocityStart*Math.pow(0.9,elapsedTime/smoothness);
+
+
+			
+			if (this.momentumAnimationBouncingBack && new_position.y < 0){
 				var elastic = 0.9;
 				var max_displacement = this.velocity/elastic;
 				var boundary_initial_velocity = this.velocity;
 				var boundary_initial_time = currentTime;
+
+				this.momentumAnimationBouncingBack = true;
 
 				//needs a better transition
 
@@ -340,18 +351,23 @@ var m = Math,
 
 				new_position = max_displacement*Math.cos( elastic*elapsedTime );
 			}
-			*/
+			
 
-			if ( sameSign( this.momentumAnimationVelocityStart, new_velocity  ) ){
+			if ( Math.abs(new_velocity) > 0.01 ){
 				window.requestAnimationFrame(function(){
 					that.momentumAnimation();
 				});
 
-				this.velocity = new_velocity;
-				this.timeStamp = currentTime;
+				elapsedTime = currentTime - this.timeStamp;
+
+				
 				//this.pos( 0, new_position.y , smoothness );
 
-				this.incrementPos( 0, new_velocity*elapsedTime);
+				this.incrementPos( 0, new_velocity*elapsedTime, smoothness);
+
+				//update to new values
+				this.velocity = new_velocity;
+				this.timeStamp = currentTime;
 			}
 			else{
 				this.stopDeacceleration();
@@ -369,7 +385,7 @@ var m = Math,
 			this.momentumAnimationStep = 0;
 
 			this.momentumAnimationTimeStart = e.timeStamp;
-			this.momentumAnimationVelocityStart = this.velocity;
+			this.momentumAnimationVelocityStart = this.velocity*0.8;
 
 			this.momentumAnimationPositionStart = { x:this.x, y:this.y};
 
