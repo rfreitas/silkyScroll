@@ -25,7 +25,6 @@
 }());
 
 
-
 /*!
  * iScroll v4.2 ~ Copyright (c) 2012 Matteo Spinelli, http://cubiq.org
  * Released under MIT license, http://cubiq.org/license
@@ -37,6 +36,17 @@
 	it was the iScroller itself that scaled the content
  */
  //other scrolling references: http://yuilibrary.com/yui/docs/scrollview/
+ // http://joehewitt.github.com/scrollability/tableview.html https://github.com/joehewitt/scrollability
+ // scrollability user css keyframes which have a bigger overhead, though its friction formula is much close the iOS one
+ //friction discussions: http://gamedev.stackexchange.com/questions/20905/simple-speed-deceleration-with-variable-time-step
+ // fixing iOS scrolling:
+ //  https://github.com/joelambert/ScrollFix
+ //  http://stackoverflow.com/questions/2890361/disable-scrolling-in-an-iphone-web-application
+ //  scrollability has it fixed as well
+ // bezier curves, good for smoothness:
+ //  http://www.gamedev.net/topic/351308-cubic-bezier-curve-tangent/
+ //  http://cubic-bezier.com/
+ //  todo make function like: var bezier-value = function( currentVelocity, acceleration, duration)
 (function(window, doc){
 var m = Math,
 	dummyStyle = doc.createElement('div').style,
@@ -200,6 +210,8 @@ var m = Math,
 		}
 
 		this.start = function(e){
+			e.preventDefault();
+
 			var current_point = this.getPoint(e);
 			this.point = current_point;
 			this.timeStamp = e.timeStamp ;
@@ -292,7 +304,7 @@ var m = Math,
 			//equal or less to the time between the current frame and the next
 			//therefore it's necessary to have a prediction model
 			//in this case the average of time in between frames divided by 2 is being used
-			var smoothness = (elapsedTime/this.momentumAnimationStep)/2;
+			var smoothness = (elapsedTime/this.momentumAnimationStep);
 
 			var sign = 1;
 			if ( sameSign( this.momentumAnimationVelocityStart, this.deacceleration ) ){
@@ -303,12 +315,32 @@ var m = Math,
 			}
 
 			console.log(this.deacceleration);
-			var new_velocity = this.momentumAnimationVelocityStart + sign*this.deacceleration*elapsedTime;
+			//var new_velocity = this.momentumAnimationVelocityStart + sign*this.deacceleration*elapsedTime;
+
+			//assumes that time between frames is constant
+			var new_velocity = this.velocity*0.89;//this creates a hidh order hiperbole, meaning in the rate/deacceleration decreases
+			//var finish_time = -this.momentumAnimationVelocityStart/(sign*this.deacceleration);
 
 			var new_position = {
 				x:0,
-				y: this.momentumAnimationPositionStart.y + this.momentumAnimationVelocityStart*elapsedTime + (sign/2)*this.deacceleration*elapsedTime*elapsedTime
+				y: this.momentumAnimationPositionStart.y + this.momentumAnimationVelocityStart*elapsedTime +
+				 (sign/2)*this.deacceleration*elapsedTime*elapsedTime
 			};
+
+			/*
+			if (new_position.y < 0){
+				var elastic = 0.9;
+				var max_displacement = this.velocity/elastic;
+				var boundary_initial_velocity = this.velocity;
+				var boundary_initial_time = currentTime;
+
+				//needs a better transition
+
+				elapsedTime = currentTime - boundary_initial_time;
+
+				new_position = max_displacement*Math.cos( elastic*elapsedTime );
+			}
+			*/
 
 			if ( sameSign( this.momentumAnimationVelocityStart, new_velocity  ) ){
 				window.requestAnimationFrame(function(){
@@ -316,14 +348,10 @@ var m = Math,
 				});
 
 				this.velocity = new_velocity;
-				/*
-				console.log("elapsedTime"+elapsedTime);
-				console.log("this.momentumAnimationVelocityStart"+this.momentumAnimationVelocityStart);
-				console.log("animating in this bitch");
-				console.log("velocity:"+this.velocity);
-				console.log("increment:"+new_position.y);
-				*/
-				this.pos( 0, new_position.y , smoothness );
+				this.timeStamp = currentTime;
+				//this.pos( 0, new_position.y , smoothness );
+
+				this.incrementPos( 0, new_velocity*elapsedTime);
 			}
 			else{
 				this.stopDeacceleration();
@@ -337,11 +365,12 @@ var m = Math,
 
 			this.givingMomentum = true;
 
-			this.deacceleration = 0.002;
+			this.deacceleration = 0.0025;
 			this.momentumAnimationStep = 0;
 
 			this.momentumAnimationTimeStart = e.timeStamp;
 			this.momentumAnimationVelocityStart = this.velocity;
+
 			this.momentumAnimationPositionStart = { x:this.x, y:this.y};
 
 			this.momentumAnimationId = window.requestAnimationFrame( function(){
@@ -382,8 +411,9 @@ var m = Math,
 			}
 			else if (!equalPoints( current_point, this.point )){
 				var delta = this.delta( this.point , current_point);
-				this.velocity = delta.y/elapsedTime;
-				this.timeStamp = e.timeStamp;
+				//makes it less abrupt without considering the final velocity provided by the end event
+				//this.velocity = delta.y/elapsedTime;
+				//this.timeStamp = e.timeStamp;
 			}
 			
 			console.log("velocity:"+this.velocity);
@@ -459,8 +489,6 @@ var m = Math,
 
 			el.on( MOVE_EV, moveHandler);
 			el.on ( CANCEL_EV + " "+ END_EV, endHandler);
-
-			that.scrollingElement[0].style[transitionDuration] = "0ms";
 		};
 		var moveHandler = function(e){
 			that.move(e);
