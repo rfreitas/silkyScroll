@@ -205,18 +205,21 @@ var m = Math,
 
 			//what if it's momentum mode and the user rest his finger but does not move it,
 			//how do you check to see if the finger should stop the momentum?
-			var checkIfStaticTime = 100;
+			
 			var startedMoving = false;
-
 			$(e.target).one( MOVE_EV, function(){
 				startedMoving = true;
 			});
+			var ended = false;
+			$(e.target).one( END_EV, function(){
+				ended = true;
+			});
 
+			var checkIfStaticTime = 100;
 			window.setTimeout( function(){
-				if (!that.startedMoving){
+				if (!startedMoving && !ended){
 					that.stopDeacceleration();
-					console.log("DEACCELERATION");
-					that.deacceleration = 90;
+					console.log("STOPPING");
 				}
 			}, checkIfStaticTime);
 		};
@@ -349,21 +352,29 @@ var m = Math,
 			//the end point might be different than the previous end point,
 			//but might be the same as well
 
-			var time = 100;//ms
+			//lifting the finger at the end of giving momentum might take time,
+			//even if the contact point is the same, therefore needs to be some way
+			//to account for it, hence the following tolerance
+			//from a couple of experiments in a macbook using chrome, the average is of 15ms
+			//but 100ms is a safer bet and one that still wouldn't turn off the user
+			var toleranceFromMoveToEnd = 100;//ms
 
 			var elapsedTime = e.timeStamp - this.timeStamp;
+
+			console.log("elapsedTime:"+elapsedTime);
+			console.log("delta:"+(current_point.y-this.point.y));
 			
-			if (equalPoints( current_point, this.point )  && elapsedTime > time){
+			if (equalPoints( current_point, this.point )  && elapsedTime > toleranceFromMoveToEnd){
 				this.velocity = 0;
 				this.timeStamp = e.timeStamp;
 			}
 			else if (!equalPoints( current_point, this.point )){
 				var delta = this.delta( this.point , current_point);
-				this.velocity = delta/elapsedTime;
+				this.velocity = delta.y/elapsedTime;
 				this.timeStamp = e.timeStamp;
-			}	
+			}
 			
-			
+			console.log("velocity:"+this.velocity);
 
 
 			var nullVelocityMinimum = 0.5;
