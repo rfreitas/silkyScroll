@@ -36,6 +36,7 @@
 	The iScroller already takes into account zooming, but only for the case that the
 	it was the iScroller itself that scaled the content
  */
+ //other scrolling references: http://yuilibrary.com/yui/docs/scrollview/
 (function(window, doc){
 var m = Math,
 	dummyStyle = doc.createElement('div').style,
@@ -278,10 +279,20 @@ var m = Math,
 		this.momentumAnimation = function(){
 			if ( !this.givingMomentum) return;
 
+			this.momentumAnimationStep +=1;
+
 			var final_time = 2000;
 
 			var currentTime = new Date().getTime();
 			var elapsedTime = currentTime - this.momentumAnimationTimeStart ;
+
+			//If the frame rate is slow the animation will seem choppy
+			//one way to solve this is to update the scroller position
+			//with a CSS transition and the time of the transition should be
+			//equal or less to the time between the current frame and the next
+			//therefore it's necessary to have a prediction model
+			//in this case the average of time in between frames divided by 2 is being used
+			var smoothness = (elapsedTime/this.momentumAnimationStep)/2;
 
 			var sign = 1;
 			if ( sameSign( this.momentumAnimationVelocityStart, this.deacceleration ) ){
@@ -312,7 +323,7 @@ var m = Math,
 				console.log("velocity:"+this.velocity);
 				console.log("increment:"+new_position.y);
 				*/
-				this.pos( 0, new_position.y  );
+				this.pos( 0, new_position.y , smoothness );
 			}
 			else{
 				this.stopDeacceleration();
@@ -327,6 +338,7 @@ var m = Math,
 			this.givingMomentum = true;
 
 			this.deacceleration = 0.002;
+			this.momentumAnimationStep = 0;
 
 			this.momentumAnimationTimeStart = e.timeStamp;
 			this.momentumAnimationVelocityStart = this.velocity;
