@@ -306,7 +306,11 @@ var m = Math,
 			//equal or less to the time between the current frame and the next
 			//therefore it's necessary to have a prediction model
 			//in this case the average of time in between frames divided by 2 is being used
+			//TODO remove outliers! which can be very common, since this function is not called
+			//when the tab is not viewable
+
 			var smoothness = (elapsedTime/this.momentumAnimationStep);
+
 
 			var sign = 1;
 			if ( sameSign( this.momentumAnimationVelocityStart, this.deacceleration ) ){
@@ -318,24 +322,44 @@ var m = Math,
 
 			console.log(this.deacceleration);
 
+			var new_velocity;
+
+			//iterative is frame rate independent, but can also be more taxing in computation
+
 			//assumes that time between frames is constant
 			//this can be a problem for low end devices, but it is fastest way
 			//v(t) = v(t-1)*K'  , the K' is for a constant dt
 			//var new_velocity = this.velocity*0.9;//this creates a hidh order hiperbole, meaning in the rate/deacceleration decreases
 			
-
+			//iOS version, or at least the closest one
 			//version that does not assume a constant frame rate
 			//non recursive formula: v(t) = Vo*K^(t/dt)
 			//recusive formula v(t) = Vt-1*K^(1/dt)
-				var friction = Math.pow(0.6,1/smoothness);
-				console.log("friction:"+friction);
+				//var friction = Math.pow(0.6,1/smoothness);//very cpu taxing
+				//console.log("friction:"+friction);
 
-				new_velocity = this.velocity*friction;
+				//new_velocity = this.velocity*friction;
 
 				//non recursive version
-				//new_velocity = this.momentumAnimationVelocityStart*Math.pow(0.9,elapsedTime/smoothness);
+				//conclusion, does not seem too slow on an i5
+				//use memoazition!
 
+				//new_velocity = this.momentumAnimationVelocityStart*Math.pow(0.9987,elapsedTime);
 
+				//using memoazition!
+				var previous_elapsedTime = this.timeStamp - this.momentumAnimationTimeStart;
+				new_velocity = this.velocity*Math.pow(0.9987,elapsedTime-previous_elapsedTime);
+
+			/*
+			iterative non exponetial velocity function
+			try to approximate using the hiperbole function
+			f = k/(x+a)
+			for x=0 -> Vo = k/a, assume a = 1 -> k = -Vo
+			conclusion: too slow to reach a stop at the end and too fast to slow down in the begining
+			*/
+			//new_velocity = this.momentumAnimationVelocityStart/((elapsedTime/10)+1);
+			
+			//use taylor series to approximate it
 			
 			if (this.momentumAnimationBouncingBack && new_position.y < 0){
 				var elastic = 0.9;
