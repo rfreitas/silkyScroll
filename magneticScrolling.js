@@ -311,17 +311,6 @@ var m = Math,
 
 			var smoothness = (elapsedTime/this.momentumAnimationStep);
 
-
-			var sign = 1;
-			if ( sameSign( this.momentumAnimationVelocityStart, this.deacceleration ) ){
-				sign = -1;
-			}
-			else{
-				sign = 1;
-			}
-
-			console.log(this.deacceleration);
-
 			var new_velocity;
 
 			//iterative is frame rate independent, but can also be more taxing in computation
@@ -347,6 +336,8 @@ var m = Math,
 				//new_velocity = this.momentumAnimationVelocityStart*Math.pow(0.9987,elapsedTime);
 
 				//using memoazition!
+				//it actually turned out to be recursive in the end, but frame rate independent as well
+				//no compromise, the cake was made and eaten
 				var previous_elapsedTime = this.timeStamp - this.momentumAnimationTimeStart;
 				new_velocity = this.velocity*Math.pow(0.9987,elapsedTime-previous_elapsedTime);
 
@@ -405,7 +396,6 @@ var m = Math,
 
 			this.givingMomentum = true;
 
-			this.deacceleration = 0.0025;
 			this.momentumAnimationStep = 0;
 
 			this.momentumAnimationTimeStart = e.timeStamp;
