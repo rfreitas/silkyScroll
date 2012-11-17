@@ -228,7 +228,7 @@ var m = Math,
 				ended = true;
 			});
 
-			var checkIfStaticTime = 100;
+			var checkIfStaticTime = 50;
 			window.setTimeout( function(){
 				if (!startedMoving && !ended){
 					that.stopDeacceleration();
@@ -289,13 +289,17 @@ var m = Math,
 			
 		};
 
+
+		var optPow = function(a,power){
+			//not sure if it's necessary to optimize, it doesn't even show up
+			//on the chrome profiler, running with a macbook pro
+			return Math.pow(a,power);
+		};
 	
 		this.momentumAnimation = function(){
 			if ( !this.givingMomentum) return;
 
 			this.momentumAnimationStep +=1;
-
-			var final_time = 2000;
 
 			var currentTime = new Date().getTime();
 			var elapsedTime = currentTime - this.momentumAnimationTimeStart ;
@@ -339,7 +343,10 @@ var m = Math,
 				//it actually turned out to be recursive in the end, but frame rate independent as well
 				//no compromise, the cake was made and eaten
 				var previous_elapsedTime = this.timeStamp - this.momentumAnimationTimeStart;
-				new_velocity = this.velocity*Math.pow(0.9987,elapsedTime-previous_elapsedTime);
+				//it can still have more memoazition, the pow calculation can still be saved and are bound
+				//to repeat themselves over time
+				//console.log(elapsedTime - previous_elapsedTime);
+				new_velocity = this.velocity*optPow(0.9987,elapsedTime-previous_elapsedTime);
 
 			/*
 			iterative non exponetial velocity function
@@ -362,9 +369,9 @@ var m = Math,
 
 				//needs a better transition
 
-				elapsedTime = currentTime - boundary_initial_time;
+				var elapsedTimeSinceLastFrame = currentTime - boundary_initial_time;
 
-				new_position = max_displacement*Math.cos( elastic*elapsedTime );
+				new_position = max_displacement*Math.cos( elastic*elapsedTimeSinceLastFrame );
 			}
 			
 
@@ -400,6 +407,7 @@ var m = Math,
 
 			this.momentumAnimationTimeStart = e.timeStamp;
 			this.momentumAnimationVelocityStart = this.velocity*0.8;
+			this.velocity = this.velocity*0.8;
 
 			this.momentumAnimationPositionStart = { x:this.x, y:this.y};
 
@@ -441,9 +449,16 @@ var m = Math,
 			}
 			else if (!equalPoints( current_point, this.point )){
 				var delta = this.delta( this.point , current_point);
-				//makes it less abrupt without considering the final velocity provided by the end event
-				//this.velocity = delta.y/elapsedTime;
-				//this.timeStamp = e.timeStamp;
+				//makes it less abrupt without considering the final velocity provided by the end event (considering the end velocity creates one which just seems exagerated)
+				//however, this might introduce a bug, sometimes when giving momentim the animatio goes
+				//to a stop even though momentim is being given by the user, this might
+				//happen if for example move is not called and therefore goes directly from start to end
+				//in that circustance velocity is not calculated
+				//so a way to circumvent that is to make the velocity is not 0
+				if (this.velocity == 0){
+					this.velocity = delta.y/elapsedTime;
+					this.timeStamp = e.timeStamp;
+				}
 			}
 			
 			console.log("velocity:"+this.velocity);
