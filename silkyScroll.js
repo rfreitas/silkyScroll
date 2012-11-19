@@ -135,7 +135,7 @@ var m = Math,
 
 
 	var constructor =
-	window.mScroll = function(el){
+	window.silky = function(el){
 		el = $(el);
 
 		this.previousPoint = null;
