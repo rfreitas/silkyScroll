@@ -135,7 +135,7 @@ var m = Math,
 
 
 	var constructor =
-	window.silky = function(el){
+	window.silky = function(el, frame){
 		el = $(el);
 
 		this.previousPoint = null;
@@ -561,7 +561,7 @@ var m = Math,
 		};
 
 		//initializing the event handlers
-		target.on( START_EV, startHandler);
+		frame.on( START_EV, startHandler);
 		//el.on( MOVE_EV, moveHandler );
 		//el.on ( CANCEL_EV + " "+ END_EV, endHandler);
 		
