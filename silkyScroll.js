@@ -541,26 +541,27 @@ var m = Math,
 		};
 
 		var that = this;
+		var target = $(window.document);
 		//event handlers
 		// these can't be changed by a client for a good reason,
 		//since their purpose is to set and unset other handlers
 		//and call the functions that matter for each event
 		var startHandler = function(e){
 			that.start(e);
-			el.on( MOVE_EV, moveHandler);
-			el.on ( CANCEL_EV + " "+ END_EV, endHandler);
+			target.on( MOVE_EV, moveHandler);
+			target.on ( CANCEL_EV + " "+ END_EV, endHandler);
 		};
 		var moveHandler = function(e){
 			that.move(e);
 		};
 		var endHandler = function(e){
-			el.off( MOVE_EV, moveHandler );
-			el.off( CANCEL_EV + " "+ END_EV, endHandler );
+			target.off( MOVE_EV, moveHandler );
+			target.off( CANCEL_EV + " "+ END_EV, endHandler );
 			that.end(e);
 		};
 
 		//initializing the event handlers
-		el.on( START_EV, startHandler);
+		target.on( START_EV, startHandler);
 		//el.on( MOVE_EV, moveHandler );
 		//el.on ( CANCEL_EV + " "+ END_EV, endHandler);
 		
