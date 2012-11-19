@@ -89,7 +89,7 @@ var m = Math,
 	START_EV = hasTouch ? 'touchstart' : 'mousedown',
 	MOVE_EV = hasTouch ? 'touchmove' : 'mousemove',
 	END_EV = hasTouch ? 'touchend' : 'mouseup',
-	CANCEL_EV = hasTouch ? 'touchcancel' : 'mouseleave',
+	CANCEL_EV = hasTouch ? 'touchcancel' : '',
 	WHEEL_EV = vendor == 'Moz' ? 'DOMMouseScroll' : 'mousewheel',
 	TRNEND_EV = (function () {
 		if ( vendor === false ) return false;
