@@ -222,13 +222,14 @@ var m = Math,
 			//how do you check to see if the finger should stop the momentum?
 			
 			var startedMoving = false;
+			var ended = false;
 			$(e.target).one( MOVE_EV, function(){
 				startedMoving = true;
 				if (!ended){
 					this.onScrollingStart();
 				}
 			});
-			var ended = false;
+			
 			$(e.target).one( END_EV, function(){
 				ended = true;
 			});
