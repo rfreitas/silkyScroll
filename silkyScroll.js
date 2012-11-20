@@ -224,6 +224,9 @@ var m = Math,
 			var startedMoving = false;
 			$(e.target).one( MOVE_EV, function(){
 				startedMoving = true;
+				if (!ended){
+					this.onScrollingStart();
+				}
 			});
 			var ended = false;
 			$(e.target).one( END_EV, function(){
@@ -431,7 +434,16 @@ var m = Math,
 				window.cancelAnimationFrame(this.momentumAnimationId);
 				this.givingMomentum = false;
 				this.velocity = 0;
+				this.onScrollingStop();
 			}
+		};
+
+		this.onScrollingStart = function(){
+
+		};
+
+		this.onScrollingStop = function(){
+
 		};
 
 		this.end = function(e){
