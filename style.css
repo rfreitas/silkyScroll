@@ -12,6 +12,10 @@
 	user-select: none;
 }
 
+.zoomed{
+	-webkit-transform: scale(0.1);
+}
+
 .list{
 	width: 100%;
 	

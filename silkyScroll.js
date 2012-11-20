@@ -486,6 +486,9 @@ var m = Math,
 				this.startDeacceleration(e);
 				return;
 			}
+			else{
+				this.stopDeacceleration(e);
+			}
 
 			console.log("end point:"+this.getPoint(e).y);
 
