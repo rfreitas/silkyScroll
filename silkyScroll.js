@@ -215,7 +215,6 @@ var m = Math,
 			var current_point = this.getPoint(e);
 			this.point = current_point;
 			this.timeStamp = e.timeStamp ;
-
 			this.started = true;
 
 			//what if it's momentum mode and the user rest his finger but does not move it,
@@ -226,7 +225,7 @@ var m = Math,
 			$(e.target).one( MOVE_EV, function(){
 				startedMoving = true;
 				if (!ended){
-					this.onScrollingStart();
+					that.onScrollingStart();
 				}
 			});
 			
